@@ -1,0 +1,1 @@
+module go-event-service
