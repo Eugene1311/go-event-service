@@ -1,0 +1,13 @@
+app:
+  kafka:
+    brokers:
+     - localhost:19092
+    consumer-group: go-event-service
+    topic: events
+
+  elastic:
+    addresses:
+      - https://localhost:9200
+    user: elastic
+    password: password
+    events-index: events
