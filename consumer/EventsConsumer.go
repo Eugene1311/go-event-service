@@ -23,6 +23,7 @@ func (consumer EventsConsumer) Process(eventsChannel chan model.Event) {
 	for {
 		m, err := consumer.kafkaReader.ReadMessage(context.Background())
 		if err != nil {
+			log.Printf(err.Error())
 			break
 		}
 		var event model.Event
