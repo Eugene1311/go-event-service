@@ -35,15 +35,10 @@ func main() {
 	eventsChannel := make(chan model.Event)
 	go eventsConsumer.Process(eventsChannel)
 
-	//cfg := elasticsearch.Config{
-	//	Addresses:         config.App.Elastic.Addresses,
-	//	Username:          config.App.Elastic.User,
-	//	Password:          config.App.Elastic.Password,
-	//	EnableDebugLogger: true,
-	//	//CACert:   cert,
-	//}
-	//elasticSearchClient, err := elasticsearch.NewClient(cfg)
-	elasticSearchClient, err := elasticsearch.NewDefaultClient()
+	elasticSearchClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Username: config.App.Elastic.User,
+		Password: config.App.Elastic.Password,
+	})
 	if err != nil {
 		log.Fatal("Failed to create Elasticsearch client:", err)
 	}
