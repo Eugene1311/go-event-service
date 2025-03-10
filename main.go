@@ -7,6 +7,7 @@ import (
 	"go-event-service/consumer"
 	"go-event-service/model"
 	"go-event-service/repository"
+	"go-event-service/service"
 	"log"
 	"os"
 )
@@ -29,12 +30,6 @@ func main() {
 		ErrorLogger: errorLogger,
 		//MaxBytes: 10e6, // 10MB
 	})
-	eventsConsumer := consumer.NewEventsConsumer(kafkaReader)
-	defer eventsConsumer.Close()
-
-	eventsChannel := make(chan model.Event)
-	go eventsConsumer.Process(eventsChannel)
-
 	elasticSearchClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Username: config.App.Elastic.User,
 		Password: config.App.Elastic.Password,
@@ -43,12 +38,10 @@ func main() {
 		log.Fatal("Failed to create Elasticsearch client:", err)
 	}
 	eventRepository := repository.NewElasticEventRepository(elasticSearchClient, config.App.Elastic.EventsIndex)
+	eventService := service.NewDomainEventService(eventRepository)
 
-	for {
-		select {
-		case event := <-eventsChannel:
-			log.Printf("Recieved event: %+v", event)
-			_, _ = eventRepository.Save(event)
-		}
-	}
+	eventsConsumer := consumer.NewEventsConsumer(kafkaReader, eventService)
+	defer eventsConsumer.Close()
+
+	eventsConsumer.Process()
 }
