@@ -25,7 +25,7 @@ func NewEventsConsumer(kafkaReader *kafka.Reader, eventService interfaces.EventS
 func (consumer EventConsumer) Process() {
 	for {
 		ctx := context.Background()
-		message, err := consumer.kafkaReader.ReadMessage(ctx)
+		message, err := consumer.kafkaReader.FetchMessage(ctx)
 		if err != nil {
 			log.Printf(err.Error())
 			break
@@ -34,6 +34,7 @@ func (consumer EventConsumer) Process() {
 		err = json.Unmarshal(message.Value, &event)
 		if err != nil {
 			fmt.Println(err.Error())
+			break
 		}
 		log.Printf("Message at topic/partition/offset %v/%v/%v: %s = %+v\n", message.Topic, message.Partition, message.Offset, string(message.Key), event)
 
