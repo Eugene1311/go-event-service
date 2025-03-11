@@ -10,11 +10,15 @@ import (
 	"go-event-service/service"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	var config model.Config
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
+	var config model.Config
 	err := cleanenv.ReadConfig("config/config.yml", &config)
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +45,8 @@ func main() {
 	eventService := service.NewDomainEventService(eventRepository)
 
 	eventsConsumer := consumer.NewEventsConsumer(kafkaReader, eventService)
-	defer eventsConsumer.Close()
+	go eventsConsumer.Process()
 
-	eventsConsumer.Process()
+	<-signalCh
+	eventsConsumer.Close()
 }
