@@ -40,7 +40,6 @@ func (consumer EventConsumer) Process() {
 
 		_, err = consumer.eventService.Save(event)
 		if err != nil {
-			log.Printf("Error while saving event, %s", err.Error())
 			break
 		}
 		err = consumer.kafkaReader.CommitMessages(ctx, message)

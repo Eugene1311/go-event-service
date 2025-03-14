@@ -17,6 +17,7 @@ func NewDomainEventService(eventRepository interfaces.EventsRepository) DomainEv
 }
 
 func (service DomainEventService) Save(event model.Event) (model.Event, error) {
+	log.Printf("Saving event %+v", event)
 	_, err := service.eventRepository.Save(event)
 	if err != nil {
 		log.Printf("Error while savind event %v, %s", event, err.Error())

@@ -2,10 +2,10 @@ package repository
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"go-event-service/model"
 	"log"
 )
@@ -27,20 +27,17 @@ func (repository ElasticEventRepository) Save(event model.Event) (*string, error
 	if err != nil {
 		return nil, err
 	}
+	res, err := repository.elasticSearchClient.Index(repository.eventsIndex, bytes.NewReader(data))
 
-	request := esapi.IndexRequest{
-		Index:   repository.eventsIndex,
-		Body:    bytes.NewReader(data),
-		Refresh: "true",
-	}
-	res, err := request.Do(context.Background(), repository.elasticSearchClient)
 	if err != nil {
 		log.Fatalf("Error getting response: %s", err)
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		log.Printf("[%s] Error indexing document", res.Status())
+		errorMessage := fmt.Sprintf("[%s] Error indexing document", res.Status())
+		return nil, errors.New(errorMessage)
 	} else {
 		var r map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
@@ -52,5 +49,4 @@ func (repository ElasticEventRepository) Save(event model.Event) (*string, error
 			return &documentId, nil
 		}
 	}
-	return nil, nil
 }

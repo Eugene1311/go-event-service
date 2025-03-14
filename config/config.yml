@@ -7,7 +7,7 @@ app:
 
   elastic:
     addresses:
-      - https://localhost:9200
+      - http://localhost:9200
     user: elastic
     password: password
     events-index: events
