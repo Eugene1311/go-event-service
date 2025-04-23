@@ -47,6 +47,7 @@ func main() {
 	eventsConsumer := consumer.NewEventsConsumer(kafkaReader, eventService)
 	go eventsConsumer.Process()
 
-	<-signalCh
+	exitSignal := <-signalCh
+	log.Printf("Received signal %+v", exitSignal)
 	eventsConsumer.Close()
 }
